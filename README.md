@@ -1,36 +1,40 @@
 # 🎲 Roll Dice MCP Server - OAuth 2.1 Secured Edition
 
-**Production-grade MCP server demonstrating enterprise security best practices**
+**Production-grade MCP server with enterprise security**
 
-A fully secured Model Context Protocol (MCP) server showcasing OAuth 2.1 authentication, Arcjet protection, and comprehensive security monitoring. Built as a reference implementation for the Agent Security Advanced workshop.
+A fully secured Model Context Protocol (MCP) server implementing OAuth 2.1 authentication, Arcjet protection, and comprehensive security monitoring. This project demonstrates defense-in-depth security practices for production MCP servers.
 
 [![Security](https://img.shields.io/badge/Security-OAuth%202.1-green.svg)](https://spec.modelcontextprotocol.io/specification/2025-06-18/authentication/)
 [![Protection](https://img.shields.io/badge/Protection-Arcjet-blue.svg)](https://arcjet.com)
 [![Deployed](https://img.shields.io/badge/Deployed-Vercel-black.svg)](https://vercel.com)
 
-![Roll Dice MCP Server](https://via.placeholder.com/800x400/0f0f0f/ffffff?text=Secured+Roll+Dice+MCP+Server)
+## 🔒 Security Implementation
 
-## 🔒 Security Architecture
+This server demonstrates production-ready security architecture for MCP servers:
 
-This server implements **defense-in-depth security**:
+### Authentication Layer
+- **OAuth 2.1 with Google Identity**: Token verification using `google-auth-library`
+- **PKCE Support**: Authorization Code Flow with Proof Key for Code Exchange
+- **RFC 8414 Discovery**: OAuth Authorization Server Metadata endpoints
+- **RFC 9728 Compliance**: Protected Resource Metadata for token validation
 
-1. **OAuth 2.1 Authentication** - Google ID token verification with PKCE support
-2. **Arcjet Protection** - Shield, bot detection, and rate limiting
-3. **Structured Logging** - Comprehensive audit trail of security events
-4. **Incident Response** - Battle-tested runbook for security incidents
+### Protection Layer (Arcjet)
+- **Shield**: Real-time protection against common web attacks (SQL injection, XSS, etc.)
+- **Bot Detection**: Behavioral analysis and device fingerprinting
+- **Rate Limiting**: Token bucket algorithm enforcing 60 requests/minute per user
+- **IP-based Tracking**: Per-IP rate limits with X-Forwarded-For header support
 
-### Security Features
+### Monitoring & Response
+- **Structured Logging**: Comprehensive audit trail of authentication attempts and security events
+- **Incident Response Runbook**: Detailed procedures for 5 security incident scenarios
+- **Vercel Firewall Configuration**: Infrastructure-level DDoS protection and attack mitigation
 
-- 🔐 **OAuth 2.1 Compliant**: Following MCP Specification 2025-06-18
-- 🛡️ **Arcjet Shield**: Protection against common web attacks
-- 🤖 **Bot Detection**: Behavioral analysis and fingerprinting
-- ⏱️ **Rate Limiting**: Token bucket algorithm (60 req/min)
-- 📊 **Security Monitoring**: Real-time logging of authentication and attacks
-- 📋 **RFC 8414 Discovery**: Authorization server metadata endpoints
-- 🔍 **Token Introspection**: Real-time validation with Google
-- 🚨 **Incident Response**: Complete runbook for security events
+### Documentation
+- **Security Architecture Page**: `/mcp-security` with complete implementation details
+- **Incident Response Runbook**: `docs/INCIDENT_RESPONSE_RUNBOOK.md` (500+ lines)
+- **Firewall Configuration Guide**: `docs/VERCEL_FIREWALL.md`
 
-📚 **[View Full Security Documentation →](/mcp-security)**
+🔗 **[View Live Security Documentation](https://rolldice-mcpserver-nu.vercel.app/mcp-security)**
 
 ## ✨ Application Features
 
