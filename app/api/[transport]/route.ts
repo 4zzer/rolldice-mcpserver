@@ -1,5 +1,6 @@
-// app/api/[transport]/route.ts - MCP 2025-06-18 OAuth 2.1 Compliant
+// app/api/[transport]/route.ts - MCP 2025-06-18 OAuth 2.1 Compliant with Arcjet Protection
 
+import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/next";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { createMcpHandler } from "mcp-handler";
 import { type NextRequest, NextResponse } from "next/server";
@@ -7,6 +8,30 @@ import { verifyGoogleToken } from "@/lib/auth";
 import { rollDice, rollDiceTool } from "@/lib/dice";
 
 console.log("🚀 Initializing MCP OAuth 2.1 Rolldice Server (Specification 2025-06-18)");
+
+// Arcjet security configuration
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    // Shield: Protect against common attacks
+    shield({
+      mode: "LIVE",
+    }),
+    // Bot detection: Block automated attacks
+    detectBot({
+      mode: "LIVE",
+      allow: ["CATEGORY:SEARCH_ENGINE"], // Allow legitimate search engine bots
+    }),
+    // Rate limiting: Token bucket algorithm
+    tokenBucket({
+      mode: "LIVE",
+      characteristics: ["userId", "ip"],
+      refillRate: 10, // Refill 10 tokens per interval
+      interval: 60, // Every 60 seconds
+      capacity: 60, // Maximum 60 tokens
+    }),
+  ],
+});
 
 // Type definitions for better type safety
 interface ToolExtra {
@@ -103,8 +128,70 @@ const baseHandler = createMcpHandler(
   },
 );
 
-// MCP Authorization Specification compliant wrapper
+// MCP Authorization Specification compliant wrapper with Arcjet protection
 async function mcpAuthHandler(request: NextRequest) {
+  // Apply Arcjet security checks
+  const decision = await aj.protect(request, {
+    userId: request.headers.get("authorization")?.substring(7, 50) || "anonymous",
+    requested: 1, // Request 1 token from the token bucket
+  });
+
+  console.log("🛡️ Arcjet Decision:", decision.conclusion);
+
+  if (decision.isDenied()) {
+    console.log("❌ Arcjet blocked request:", decision.reason);
+    
+    if (decision.reason.isRateLimit()) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "rate_limit_exceeded",
+          message: "Too many requests. Please slow down.",
+          retryAfter: decision.reason.resetTime
+            ? Math.ceil((decision.reason.resetTime.getTime() - Date.now()) / 1000)
+            : 60,
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": decision.reason.resetTime
+              ? Math.ceil((decision.reason.resetTime.getTime() - Date.now()) / 1000).toString()
+              : "60",
+          },
+        },
+      );
+    }
+
+    if (decision.reason.isBot()) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "forbidden",
+          message: "Automated requests are not allowed",
+        }),
+        {
+          status: 403,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }
+
+    // Generic shield block
+    return new NextResponse(
+      JSON.stringify({
+        error: "forbidden",
+        message: "Request blocked by security policy",
+      }),
+      {
+        status: 403,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+  }
+
   console.log("=== MCP OAUTH 2.1 TOKEN VERIFICATION ===");
 
   const authHeader = request.headers.get("authorization");
@@ -204,5 +291,8 @@ console.log("  - Token audience validation");
 console.log("  - WWW-Authenticate headers on 401 (RFC 9728)");
 console.log("  - Protected resource metadata endpoint");
 console.log("  - Authorization server metadata endpoint");
+console.log("  - Arcjet Shield protection (LIVE mode)");
+console.log("  - Arcjet Bot detection (LIVE mode)");
+console.log("  - Arcjet Rate limiting: 10 req/min (token bucket)");
 
 export { mcpAuthHandler as GET, mcpAuthHandler as POST };
