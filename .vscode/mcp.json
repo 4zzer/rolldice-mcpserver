@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "rolldice-production": {
+      "type": "http",
+      "url": "https://rolldice-mcpserver-nu.vercel.app/api/mcp"
+    },
+    "rolldice-local": {
+      "type": "http",
+      "url": "http://localhost:3000/api/mcp"
+    }
+  }
+}
