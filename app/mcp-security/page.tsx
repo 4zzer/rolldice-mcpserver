@@ -213,7 +213,7 @@ export default function MCPSecurityPage() {
             <ul className="list-disc list-inside space-y-1 text-sm">
               <li>Vercel Dashboard → Project → Logs</li>
               <li>Filter by deployment or time range</li>
-              <li>Search for specific patterns (e.g., "❌", "Arcjet blocked")</li>
+              <li>Search for specific patterns (e.g., ❌, Arcjet blocked)</li>
               <li>Export for external SIEM integration if needed</li>
             </ul>
           </div>
