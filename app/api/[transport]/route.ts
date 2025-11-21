@@ -133,6 +133,7 @@ async function mcpAuthHandler(request: NextRequest) {
   // Apply Arcjet security checks
   const decision = await aj.protect(request, {
     userId: request.headers.get("authorization")?.substring(7, 50) || "anonymous",
+    ip: request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || "unknown",
     requested: 1, // Request 1 token from the token bucket
   });
 
